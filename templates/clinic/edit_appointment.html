@@ -1,0 +1,54 @@
+{% extends "../Base.html" %}
+{% block title %}
+    Edit Appointment
+{% endblock %}
+{% block content %}
+    <h1>Edit Appointment</h1>
+    <h5>Current Appointment</h5>
+    <p>
+        Doctor:
+        {{ appointment.slot.doctor.name }}
+    </p>
+    <p>
+        Date:
+        {{ appointment.slot.date }}
+    </p>
+    <p>
+        Time:
+        {{ appointment.slot.time }}
+    </p>
+    <hr>
+    <h5>Select a New Appointment Slot</h5>
+    <form method="post">
+        {% csrf_token %}
+        {% for slot in appointment_slots %}
+            <div class="card mb-2">
+                <div class="card-body">
+                    <input type="radio"
+                           name="slot_id"
+                           value="{{ slot.id }}"
+                           required>
+                    {{ slot.doctor.name }}
+                    -
+                    {{ slot.date }}
+                    -
+                    {{ slot.time }}
+                </div>
+            </div>
+        {% empty %}
+            <p>
+                No other appointment slots are currently available.
+            </p>
+        {% endfor %}
+        {% if appointment_slots %}
+            <button type="submit"
+                    class="btn btn-primary">
+                Update Appointment
+            </button>
+        {% endif %}
+        <a class="btn btn-secondary"
+           href="{% url 'my_appointments' %}">
+            Back
+        </a>
+    </form>
+{% endblock %}

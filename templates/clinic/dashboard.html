@@ -1,0 +1,93 @@
+{% extends "../Base.html" %}
+
+{% block title %}
+    Administrator Dashboard
+{% endblock %}
+
+
+{% block content %}
+
+    <h1>Administrator Dashboard</h1>
+
+    <p>
+        Welcome, {{ user.username }}
+    </p>
+
+    <hr>
+
+
+    <div class="row">
+        <div class="col-md-6 mb-3">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">
+                        Doctors
+                    </h5>
+                    <p class="card-text">
+                        Total Doctors:
+                        {{ doctors.count }}
+                    </p>
+                   <a href="{% url 'manage_doctors' %}"
+                      class="btn btn-primary">
+                       Manage Doctors
+                   </a>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6 mb-3">
+
+            <div class="card">
+
+                <div class="card-body">
+
+                    <h5 class="card-title">
+                        Appointment Slots
+                    </h5>
+
+                    <p class="card-text">
+                        Total Appointment Slots:
+                        {{ appointment_slots.count }}
+                    </p>
+
+             <a href="{% url 'manage_appointment_slots' %}"
+   class="btn btn-primary">
+    Manage Appointment Slots
+</a>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6 mb-3">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">
+                        Appointments
+                    </h5>
+                    <p class="card-text">
+                        Total Appointments:
+                        {{ appointments.count }}
+                    </p>
+
+               <a href="{% url 'manage_appointments' %}" class="btn btn-primary">Manage Appointments</a>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6 mb-3">
+
+            <div class="card">
+
+                <div class="card-body">
+
+                    <h5 class="card-title">
+                        Patients
+                    </h5>
+                    <p class="card-text">
+                        Total Patients:
+                        {{ patients.count }}
+                    </p>
+                  <a href="{% url 'manage_patients' %}" class="btn btn-primary">Manage Patients</a>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}

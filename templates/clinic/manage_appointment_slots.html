@@ -1,0 +1,72 @@
+{% extends "../Base.html" %}
+
+{% block title %}
+    Manage Appointment Slots
+{% endblock %}
+
+
+{% block content %}
+
+    <h1>Manage Appointment Slots</h1>
+
+    <p>
+        Manage available appointment slots for doctors.
+    </p>
+
+
+  <a href="{% url 'add_appointment_slot_view' %}"
+     class="btn btn-success mb-3">
+      Add Appointment Slot
+  </a>
+
+
+    {% for slot in appointment_slots %}
+
+        <div class="card mb-3">
+
+            <div class="card-body">
+
+                <h5 class="card-title">
+                    {{ slot.doctor.name }}
+                </h5>
+
+                <p>
+                    Specialty:
+                    {{ slot.doctor.specialty }}
+                </p>
+
+                <p>
+                    Date:
+                    {{ slot.date }}
+                </p>
+
+                <p>
+                    Time:
+                    {{ slot.time }}
+                </p>
+
+
+               <a href="{% url 'edit_appointment_slot' slot.id %}" class="btn btn-primary">Edit</a>
+
+
+             <a href="{% url 'delete_appointment_slot' slot.id %}" class="btn btn-danger">Delete</a>
+
+            </div>
+
+        </div>
+
+    {% empty %}
+
+        <p>
+            No appointment slots found.
+        </p>
+
+    {% endfor %}
+
+
+    <a href="{% url 'dashboard' %}"
+       class="btn btn-secondary">
+        Back to Dashboard
+    </a>
+
+{% endblock %}

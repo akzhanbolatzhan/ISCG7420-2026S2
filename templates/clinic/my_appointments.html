@@ -1,0 +1,43 @@
+{% extends "../Base.html" %}
+
+{% block title %}
+    My Appointments
+{% endblock %}
+{% block content %}
+    <h1>My Appointments</h1>
+    {% for appointment in appointments %}
+        <div class="card mb-3">
+            <div class="card-body">
+                <h5>
+                    {{ appointment.slot.doctor.name }}
+                </h5>
+                <p>
+                    Specialty:
+                    {{ appointment.slot.doctor.specialty }}
+                </p>
+                <p>
+                    Date:
+                    {{ appointment.slot.date }}
+                </p>
+                <p>
+                    Time:
+                    {{ appointment.slot.time }}
+                </p>
+                 <a class="btn btn-primary"
+                   href="{% url 'edit_appointment' appointment.id %}">
+                    Edit Appointment
+                </a>
+
+                <a class="btn btn-danger"
+                   href="{% url 'cancel_appointment' appointment.id %}">
+                    Cancel Appointment
+                </a>
+
+            </div>
+        </div>
+    {% empty %}
+        <p>
+            You have no appointments.
+        </p>
+    {% endfor %}
+{% endblock %}

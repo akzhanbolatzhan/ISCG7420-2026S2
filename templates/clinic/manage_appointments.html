@@ -1,0 +1,40 @@
+{% extends "../Base.html" %}
+{% block title %}
+    Manage Appointments
+{% endblock %}
+{% block content %}
+    <h1>Manage Appointments</h1>
+    <p>View and manage all patient appointments.</p>
+    {% for appointment in appointments %}
+        <div class="card mb-3">
+            <div class="card-body">
+                <h5>{{ appointment.patient.username }}</h5>
+                <p>
+                    Doctor:
+                    {{ appointment.slot.doctor.name }}
+                </p>
+                <p>
+                    Specialty:
+                    {{ appointment.slot.doctor.specialty }}
+                </p>
+                <p>
+                    Date:
+                    {{ appointment.slot.date }}
+                </p>
+                <p>
+                    Time:
+                    {{ appointment.slot.time }}
+                </p>
+                <p>
+                    Created:
+                    {{ appointment.created_at }}
+                </p>
+               <a href="{% url 'admin_edit_appointment' appointment.id %}" class="btn btn-primary">Edit</a>
+                <a href="{% url 'admin_cancel_appointment' appointment.id %}" class="btn btn-danger">Cancel</a>
+            </div>
+        </div>
+    {% empty %}
+        <p>No appointments found.</p>
+    {% endfor %}
+    <a href="{% url 'dashboard' %}" class="btn btn-secondary">Back to Dashboard</a>
+{% endblock %}

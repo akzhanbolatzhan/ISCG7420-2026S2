@@ -1,0 +1,30 @@
+{% extends "../Base.html" %}
+{% block title %}
+    Delete Appointment Slot
+{% endblock %}
+{% block content %}
+    <h1>Delete Appointment Slot</h1>
+    <p>Are you sure you want to delete this appointment slot?</p>
+    <div class="card mb-3">
+        <div class="card-body">
+            <h5>{{ slot.doctor.name }}</h5>
+            <p>
+                Specialty:
+                {{ slot.doctor.specialty }}
+            </p>
+            <p>
+                Date:
+                {{ slot.date }}
+            </p>
+            <p>
+                Time:
+                {{ slot.time }}
+            </p>
+        </div>
+    </div>
+    <form method="post">
+        {% csrf_token %}
+        <button type="submit" class="btn btn-danger">Delete Appointment Slot</button>
+        <a href="{% url 'manage_appointment_slots' %}" class="btn btn-secondary">Back</a>
+    </form>
+{% endblock %}

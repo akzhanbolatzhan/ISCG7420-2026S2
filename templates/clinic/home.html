@@ -1,0 +1,22 @@
+{% extends "../Base.html" %}
+
+
+{% block title %}
+    Piki Ora Medical Centre
+{% endblock %}
+
+
+{% block content %}
+
+    <h1>Piki Ora Medical Centre</h1>
+
+    <p>
+        Welcome to the Piki Ora Medical Centre Appointment System.
+    </p>
+
+    <a class="btn btn-primary"
+       href="{% url 'doctors' %}">
+        View Doctors
+    </a>
+
+{% endblock %}

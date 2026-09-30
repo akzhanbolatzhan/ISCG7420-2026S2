@@ -1,0 +1,32 @@
+{% extends "../Base.html" %}
+{% block title %}
+    Manage Patients
+{% endblock %}
+{% block content %}
+    <h1>Manage Patients</h1>
+    <p>View and manage patient user accounts.</p>
+    {% for patient in patients %}
+        <div class="card mb-3">
+            <div class="card-body">
+                <h5>{{ patient.username }}</h5>
+                <p>
+                    Email:
+                    {{ patient.email }}
+                </p>
+                <p>
+                    Date Joined:
+                    {{ patient.date_joined }}
+                </p>
+                <p>
+                    Active:
+                    {{ patient.is_active }}
+                </p>
+                <a href="{% url 'edit_patient' patient.id %}" class="btn btn-primary">Edit</a>
+               <a href="{% url 'delete_patient' patient.id %}" class="btn btn-danger">Delete</a>
+            </div>
+        </div>
+    {% empty %}
+        <p>No patient accounts found.</p>
+    {% endfor %}
+    <a href="{% url 'dashboard' %}" class="btn btn-secondary">Back to Dashboard</a>
+{% endblock %}

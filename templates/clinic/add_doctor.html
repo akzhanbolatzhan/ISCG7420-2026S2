@@ -1,0 +1,50 @@
+{% extends "../Base.html" %}
+
+{% block title %}
+    Add Doctor
+{% endblock %}
+
+
+{% block content %}
+
+    <h1>Add Doctor</h1>
+
+    <form method="post"
+          action="{% url 'add_doctor' %}">
+
+        {% csrf_token %}
+
+        <p>
+            Name:
+            <input type="text"
+                   name="name"
+                   required>
+        </p>
+
+        <p>
+            Specialty:
+            <input type="text"
+                   name="specialty"
+                   required>
+        </p>
+
+        <p>
+            Bio:
+            <textarea name="bio"
+                      rows="5"
+                      cols="50"></textarea>
+        </p>
+
+        <button type="submit"
+                class="btn btn-success">
+            Add Doctor
+        </button>
+
+        <a href="{% url 'manage_doctors' %}"
+           class="btn btn-secondary">
+            Back
+        </a>
+
+    </form>
+
+{% endblock %}

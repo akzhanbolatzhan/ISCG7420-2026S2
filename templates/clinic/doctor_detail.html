@@ -1,0 +1,82 @@
+{% extends "../Base.html" %}
+
+
+{% block title %}
+    {{ doctor.name }}
+{% endblock %}
+
+
+{% block content %}
+
+    <h1>{{ doctor.name }}</h1>
+
+    <h5>
+        {{ doctor.specialty }}
+    </h5>
+
+    <p>
+        {{ doctor.bio }}
+    </p>
+
+    <hr>
+
+    <h3>Available Appointment Slots</h3>
+
+    {% for slot in appointment_slots %}
+
+        <div class="card mb-2">
+
+            <div class="card-body">
+
+                <strong>
+                    {{ slot.date }}
+                </strong>
+
+                {{ slot.time }}
+
+                {% if user.is_authenticated %}
+
+                    <form method="post"
+                          action="{% url 'book_appointment' %}"
+                          class="mt-2">
+
+                        {% csrf_token %}
+
+                        <input type="hidden"
+                               name="slot_id"
+                               value="{{ slot.id }}">
+
+                        <button type="submit"
+                                class="btn btn-primary">
+                            Book Appointment
+                        </button>
+
+                    </form>
+
+                {% else %}
+
+                    <a href="{% url 'login' %}"
+                       class="btn btn-primary mt-2">
+                        Login to Book
+                    </a>
+
+                {% endif %}
+
+            </div>
+
+        </div>
+
+    {% empty %}
+
+        <p>
+            No appointment slots are currently available.
+        </p>
+
+    {% endfor %}
+
+    <a class="btn btn-secondary mt-3"
+       href="{% url 'doctors' %}">
+        Back to Doctors
+    </a>
+
+{% endblock %}

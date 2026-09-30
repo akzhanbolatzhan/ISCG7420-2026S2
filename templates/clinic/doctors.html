@@ -1,0 +1,42 @@
+{% extends "../Base.html" %}
+
+
+{% block title %}
+    Doctors
+{% endblock %}
+
+
+{% block content %}
+
+    <h1>Doctors</h1>
+
+    {% for doctor in doctors %}
+
+
+        <div class="card mb-3">
+
+            <div class="card-body">
+
+                <h5 class="card-title">
+                    {{ doctor.name }}
+                </h5>
+
+                <h6 class="card-subtitle mb-2 text-body-secondary">
+                    {{ doctor.specialty }}
+                </h6>
+
+                <p class="card-text">
+                    {{ doctor.bio }}
+                </p>
+                  <a class="btn btn-primary"
+                href="{% url 'doctor_detail' doctor.id %}">
+                 View Schedule
+                 </a>
+
+            </div>
+
+        </div>
+
+    {% endfor %}
+
+{% endblock %}

@@ -1,0 +1,55 @@
+{% extends "../Base.html" %}
+
+{% block title %}
+    Delete Doctor
+{% endblock %}
+
+
+{% block content %}
+
+    <h1>Delete Doctor</h1>
+
+    <p>
+        Are you sure you want to delete this doctor?
+    </p>
+
+
+    <div class="card mb-3">
+
+        <div class="card-body">
+
+            <h5>
+                {{ doctor.name }}
+            </h5>
+
+            <p>
+                Specialty:
+                {{ doctor.specialty }}
+            </p>
+
+            <p>
+                {{ doctor.bio }}
+            </p>
+
+        </div>
+
+    </div>
+
+
+    <form method="post">
+
+        {% csrf_token %}
+
+        <button type="submit"
+                class="btn btn-danger">
+            Delete Doctor
+        </button>
+
+        <a href="{% url 'manage_doctors' %}"
+           class="btn btn-secondary">
+            Back
+        </a>
+
+    </form>
+
+{% endblock %}

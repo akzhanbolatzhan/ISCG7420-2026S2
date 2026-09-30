@@ -1,0 +1,70 @@
+{% extends "../Base.html" %}
+
+{% block title %}
+    Manage Doctors
+{% endblock %}
+
+
+{% block content %}
+
+    <h1>Manage Doctors</h1>
+
+    <p>
+        Manage doctor profiles in the Piki Ora Medical Centre.
+    </p>
+
+  <a href="{% url 'add_doctor_view' %}"
+   class="btn btn-success mb-3">
+    Add Doctor
+</a>
+
+
+    {% for doctor in doctors %}
+
+        <div class="card mb-3">
+
+            <div class="card-body">
+
+                <h5 class="card-title">
+                    {{ doctor.name }}
+                </h5>
+
+                <h6 class="card-subtitle mb-2 text-body-secondary">
+                    {{ doctor.specialty }}
+                </h6>
+
+                <p class="card-text">
+                    {{ doctor.bio }}
+                </p>
+
+
+             <a href="{% url 'edit_doctor' doctor.id %}"
+                class="btn btn-primary">
+                 Edit
+             </a>
+
+
+              <a href="{% url 'delete_doctor' doctor.id %}"
+               class="btn btn-danger">
+                Delete
+            </a>
+
+            </div>
+
+        </div>
+
+    {% empty %}
+
+        <p>
+            No doctors found.
+        </p>
+
+    {% endfor %}
+
+
+    <a href="{% url 'dashboard' %}"
+       class="btn btn-secondary">
+        Back to Dashboard
+    </a>
+
+{% endblock %}

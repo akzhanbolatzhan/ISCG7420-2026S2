@@ -1,0 +1,30 @@
+{% extends "../Base.html" %}
+{% block title %}
+    Edit Appointment Slot
+{% endblock %}
+{% block content %}
+    <h1>Edit Appointment Slot</h1>
+    <form method="post">
+        {% csrf_token %}
+        <p>
+            Doctor:
+            <select name="doctor" required>
+                {% for doctor in doctors %}
+                    <option value="{{ doctor.id }}" {% if doctor.id == slot.doctor.id %}selected{% endif %}>
+                        {{ doctor.name }} - {{ doctor.specialty }}
+                    </option>
+                {% endfor %}
+            </select>
+        </p>
+        <p>
+            Date:
+            <input type="date" name="date" value="{{ slot.date|date:'Y-m-d' }}" required>
+        </p>
+        <p>
+            Time:
+            <input type="time" name="time" value="{{ slot.time|time:'H:i' }}" required>
+        </p>
+        <button type="submit" class="btn btn-primary">Update Appointment Slot</button>
+        <a href="{% url 'manage_appointment_slots' %}" class="btn btn-secondary">Back</a>
+    </form>
+{% endblock %}
