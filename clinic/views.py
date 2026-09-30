@@ -44,15 +44,11 @@ def register(request):
     username = request.POST["username"]
     password = request.POST["password"]
     email = request.POST["email"]
-
-    user = User.objects.create_user(
-        username=username,
-        email=email
-    )
-
+    if User.objects.filter(username=username).exists():
+        return render(request, "clinic/register.html", {"error": "Username already exists."})
+    user = User.objects.create_user(username=username, email=email)
     user.set_password(password)
     user.save()
-
     return redirect("login")
 
 
