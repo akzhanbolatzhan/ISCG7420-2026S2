@@ -1,5 +1,6 @@
 from django.contrib.auth.models import User
 from django.shortcuts import render, redirect
+from django.contrib import messages
 
 # Create your views here.
 from clinic.models import Doctor, AppointmentSlot, Appointment
@@ -59,20 +60,12 @@ def register(request):
 def book_appointment(request):
     if not request.user.is_authenticated:
         return redirect("login")
-
     slot_id = request.POST["slot_id"]
-
     slot = AppointmentSlot.objects.get(id=slot_id)
-
     if Appointment.objects.filter(slot=slot).exists():
-        return redirect("doctor_detail",
-                        doctor_id=slot.doctor.id)
-
-    Appointment.objects.create(
-        patient=request.user,
-        slot=slot
-    )
-
+        return redirect("doctor_detail", doctor_id=slot.doctor.id)
+    Appointment.objects.create(patient=request.user, slot=slot)
+    messages.success(request, "Appointment booked successfully.")
     return redirect("my_appointments")
 
 
