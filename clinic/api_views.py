@@ -4,9 +4,10 @@ from django.utils import timezone
 from rest_framework.exceptions import ValidationError
 from rest_framework import generics, status
 from rest_framework.permissions import AllowAny, IsAuthenticated, IsAdminUser
-from .models import Doctor, AppointmentSlot
+from .models import Doctor, AppointmentSlot, Appointment
 from .serializers import DoctorSerializer, AppointmentSlotSerializer
-
+from django.db import IntegrityError, transaction
+from .serializers import AppointmentSerializer
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from .serializers import RegistrationSerializer
@@ -89,3 +90,28 @@ class AdminProfileAPIView(APIView):
             'email': request.user.email,
             'is_staff': request.user.is_staff
         })
+
+
+class PatientAppointmentListCreateAPIView(
+    generics.ListCreateAPIView
+):
+    serializer_class = AppointmentSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        return Appointment.objects.filter(
+            patient=self.request.user
+        ).select_related(
+            'slot__doctor'
+        ).order_by('-created_at')
+
+    def perform_create(self, serializer):
+        try:
+            with transaction.atomic():
+                serializer.save(
+                    patient=self.request.user
+                )
+        except IntegrityError:
+            raise ValidationError({
+                'slot': 'This appointment slot is already booked.'
+            })

@@ -265,3 +265,132 @@ class AuthenticationAPITests(APITestCase):
         response = self.client.get(reverse('api-current-user'))
 
         self.assertEqual(response.status_code, 401)
+
+
+class PatientAppointmentAPITests(APITestCase):
+
+    def setUp(self):
+        self.patient = User.objects.create_user(
+            username='bookingpatient',
+            password='TestPassword123!'
+        )
+
+        self.other_patient = User.objects.create_user(
+            username='otherpatient',
+            password='TestPassword123!'
+        )
+
+        self.doctor = Doctor.objects.create(
+            name='Dr. Smith',
+            specialty='General'
+        )
+
+        tomorrow = timezone.localdate() + timedelta(days=1)
+        yesterday = timezone.localdate() - timedelta(days=1)
+
+        self.available_slot = AppointmentSlot.objects.create(
+            doctor=self.doctor,
+            date=tomorrow,
+            time=time(10, 0)
+        )
+
+        self.booked_slot = AppointmentSlot.objects.create(
+            doctor=self.doctor,
+            date=tomorrow,
+            time=time(11, 0)
+        )
+
+        self.past_slot = AppointmentSlot.objects.create(
+            doctor=self.doctor,
+            date=yesterday,
+            time=time(9, 0)
+        )
+
+        self.other_appointment = Appointment.objects.create(
+            patient=self.other_patient,
+            slot=self.booked_slot
+        )
+
+    def test_get_appointments_requires_login(self):
+        response = self.client.get(
+            reverse('api-my-appointments')
+        )
+
+        self.assertEqual(response.status_code, 401)
+
+    def test_create_appointment_requires_login(self):
+        response = self.client.post(
+            reverse('api-my-appointments'),
+            {'slot': self.available_slot.id},
+            format='json'
+        )
+
+        self.assertEqual(response.status_code, 401)
+
+    def test_patient_only_sees_own_appointments(self):
+        self.client.force_authenticate(user=self.patient)
+
+        response = self.client.get(
+            reverse('api-my-appointments')
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(len(response.data), 0)
+
+        self.client.force_authenticate(user=self.other_patient)
+
+        response = self.client.get(
+            reverse('api-my-appointments')
+        )
+
+        self.assertEqual(len(response.data), 1)
+
+    def test_create_appointment(self):
+        self.client.force_authenticate(user=self.patient)
+
+        response = self.client.post(
+            reverse('api-my-appointments'),
+            {'slot': self.available_slot.id},
+            format='json'
+        )
+
+        self.assertEqual(response.status_code, 201)
+
+        appointment = Appointment.objects.get(
+            slot=self.available_slot
+        )
+
+        self.assertEqual(appointment.patient, self.patient)
+
+    def test_cannot_book_taken_slot(self):
+        self.client.force_authenticate(user=self.patient)
+
+        response = self.client.post(
+            reverse('api-my-appointments'),
+            {'slot': self.booked_slot.id},
+            format='json'
+        )
+
+        self.assertEqual(response.status_code, 400)
+
+    def test_cannot_book_past_slot(self):
+        self.client.force_authenticate(user=self.patient)
+
+        response = self.client.post(
+            reverse('api-my-appointments'),
+            {'slot': self.past_slot.id},
+            format='json'
+        )
+
+        self.assertEqual(response.status_code, 400)
+
+    def test_cannot_book_invalid_slot(self):
+        self.client.force_authenticate(user=self.patient)
+
+        response = self.client.post(
+            reverse('api-my-appointments'),
+            {'slot': 99999},
+            format='json'
+        )
+
+        self.assertEqual(response.status_code, 400)

@@ -1,7 +1,8 @@
 from rest_framework import serializers
-from .models import Doctor, AppointmentSlot
+from .models import Doctor, AppointmentSlot, Appointment
 from django.contrib.auth import get_user_model
 from django.contrib.auth.password_validation import validate_password
+from django.utils import timezone
 
 class DoctorSerializer(serializers.ModelSerializer):
     class Meta:
@@ -46,3 +47,57 @@ class RegistrationSerializer(serializers.ModelSerializer):
 
     def create(self, validated_data):
         return User.objects.create_user(**validated_data)
+
+
+
+class AppointmentSerializer(serializers.ModelSerializer):
+    doctor_name = serializers.CharField(
+        source='slot.doctor.name',
+        read_only=True
+    )
+    date = serializers.DateField(
+        source='slot.date',
+        read_only=True
+    )
+    time = serializers.TimeField(
+        source='slot.time',
+        read_only=True
+    )
+
+    class Meta:
+        model = Appointment
+        fields = [
+            'id',
+            'patient',
+            'slot',
+            'doctor_name',
+            'date',
+            'time',
+            'created_at'
+        ]
+        read_only_fields = [
+            'id',
+            'patient',
+            'created_at'
+        ]
+
+    def validate_slot(self, slot):
+        now = timezone.localtime()
+
+        if (
+            slot.date < now.date()
+            or (
+                slot.date == now.date()
+                and slot.time <= now.time()
+            )
+        ):
+            raise serializers.ValidationError(
+                "Cannot book an appointment in the past."
+            )
+
+        if Appointment.objects.filter(slot=slot).exists():
+            raise serializers.ValidationError(
+                "This appointment slot is already booked."
+            )
+
+        return slot

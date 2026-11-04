@@ -8,7 +8,8 @@ from .api_views import (
     RegisterAPIView,
     CurrentUserAPIView,
     LogoutAPIView,
-    AdminProfileAPIView
+    AdminProfileAPIView,
+    PatientAppointmentListCreateAPIView
 )
 
 urlpatterns = [
@@ -56,5 +57,13 @@ urlpatterns += [
         'admin/profile/',
         AdminProfileAPIView.as_view(),
         name='api-admin-profile'
+    ),
+]
+
+urlpatterns += [
+    path(
+        'appointments/',
+        PatientAppointmentListCreateAPIView.as_view(),
+        name='api-my-appointments'
     ),
 ]
