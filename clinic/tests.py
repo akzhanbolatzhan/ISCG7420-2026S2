@@ -12,7 +12,7 @@ from rest_framework import status
 from rest_framework.test import APITestCase
 
 from .models import Doctor, AppointmentSlot, Appointment
-
+from rest_framework.authtoken.models import Token
 
 class ClinicAPITests(APITestCase):
 
@@ -144,3 +144,124 @@ class ClinicAPITests(APITestCase):
             response.status_code,
             status.HTTP_405_METHOD_NOT_ALLOWED
         )
+
+
+
+class AuthenticationAPITests(APITestCase):
+
+    def setUp(self):
+        self.patient = User.objects.create_user(
+            username='patient1',
+            email='patient1@example.com',
+            password='TestPassword123!'
+        )
+
+        self.admin_user = User.objects.create_user(
+            username='admin1',
+            email='admin1@example.com',
+            password='TestPassword123!',
+            is_staff=True
+        )
+
+    def authenticate(self, user):
+        token, _ = Token.objects.get_or_create(user=user)
+        self.client.credentials(
+            HTTP_AUTHORIZATION='Token ' + token.key
+        )
+        return token
+
+    def test_register_patient(self):
+        response = self.client.post(
+            reverse('api-register'),
+            {
+                'username': 'newpatient',
+                'email': 'newpatient@example.com',
+                'password': 'StrongPassword123!'
+            },
+            format='json'
+        )
+
+        self.assertEqual(response.status_code, 201)
+
+        user = User.objects.get(username='newpatient')
+        self.assertFalse(user.is_staff)
+        self.assertTrue(user.check_password('StrongPassword123!'))
+        self.assertNotIn('password', response.data)
+
+    def test_register_duplicate_username(self):
+        response = self.client.post(
+            reverse('api-register'),
+            {
+                'username': 'patient1',
+                'email': 'another@example.com',
+                'password': 'StrongPassword123!'
+            },
+            format='json'
+        )
+
+        self.assertEqual(response.status_code, 400)
+
+    def test_login_success(self):
+        response = self.client.post(
+            reverse('api-login'),
+            {
+                'username': 'patient1',
+                'password': 'TestPassword123!'
+            },
+            format='json'
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertIn('token', response.data)
+
+    def test_login_invalid_password(self):
+        response = self.client.post(
+            reverse('api-login'),
+            {
+                'username': 'patient1',
+                'password': 'wrongpassword'
+            },
+            format='json'
+        )
+
+        self.assertEqual(response.status_code, 400)
+
+    def test_current_user_requires_login(self):
+        response = self.client.get(reverse('api-current-user'))
+
+        self.assertEqual(response.status_code, 401)
+
+    def test_patient_profile(self):
+        self.authenticate(self.patient)
+
+        response = self.client.get(reverse('api-current-user'))
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.data['username'], 'patient1')
+        self.assertFalse(response.data['is_staff'])
+
+    def test_patient_cannot_access_admin(self):
+        self.authenticate(self.patient)
+
+        response = self.client.get(reverse('api-admin-profile'))
+
+        self.assertEqual(response.status_code, 403)
+
+    def test_admin_can_access_admin(self):
+        self.authenticate(self.admin_user)
+
+        response = self.client.get(reverse('api-admin-profile'))
+
+        self.assertEqual(response.status_code, 200)
+        self.assertTrue(response.data['is_staff'])
+
+    def test_logout_invalidates_token(self):
+        self.authenticate(self.patient)
+
+        response = self.client.post(reverse('api-logout'))
+
+        self.assertEqual(response.status_code, 204)
+
+        response = self.client.get(reverse('api-current-user'))
+
+        self.assertEqual(response.status_code, 401)

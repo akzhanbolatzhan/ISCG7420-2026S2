@@ -143,3 +143,14 @@ MAILERS = {
 }
 LOGIN_REDIRECT_URL = "login_redirect"
 LOGOUT_REDIRECT_URL = "home"
+
+
+# Django REST Framework
+REST_FRAMEWORK = {
+    'DEFAULT_AUTHENTICATION_CLASSES': [
+        'rest_framework.authentication.TokenAuthentication',
+    ],
+    'DEFAULT_PERMISSION_CLASSES': [
+        'rest_framework.permissions.IsAuthenticated',
+    ],
+}

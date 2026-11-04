@@ -1,9 +1,14 @@
 from django.urls import path
+from rest_framework.authtoken.views import obtain_auth_token
 
 from .api_views import (
     DoctorListAPIView,
     DoctorDetailAPIView,
-    AvailableAppointmentSlotAPIView
+    AvailableAppointmentSlotAPIView,
+    RegisterAPIView,
+    CurrentUserAPIView,
+    LogoutAPIView,
+    AdminProfileAPIView
 )
 
 urlpatterns = [
@@ -23,5 +28,33 @@ urlpatterns = [
         'appointment-slots/',
         AvailableAppointmentSlotAPIView.as_view(),
         name='api-available-slots'
+    ),
+]
+
+urlpatterns += [
+    path(
+        'auth/register/',
+        RegisterAPIView.as_view(),
+        name='api-register'
+    ),
+    path(
+        'auth/login/',
+        obtain_auth_token,
+        name='api-login'
+    ),
+    path(
+        'auth/me/',
+        CurrentUserAPIView.as_view(),
+        name='api-current-user'
+    ),
+    path(
+        'auth/logout/',
+        LogoutAPIView.as_view(),
+        name='api-logout'
+    ),
+    path(
+        'admin/profile/',
+        AdminProfileAPIView.as_view(),
+        name='api-admin-profile'
     ),
 ]

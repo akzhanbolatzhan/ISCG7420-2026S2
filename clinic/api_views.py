@@ -1,13 +1,15 @@
 from django.db.models import Q
 from django.utils import timezone
 
-from rest_framework import generics
 from rest_framework.exceptions import ValidationError
-from rest_framework.permissions import AllowAny
-
+from rest_framework import generics, status
+from rest_framework.permissions import AllowAny, IsAuthenticated, IsAdminUser
 from .models import Doctor, AppointmentSlot
 from .serializers import DoctorSerializer, AppointmentSlotSerializer
 
+from rest_framework.views import APIView
+from rest_framework.response import Response
+from .serializers import RegistrationSerializer
 
 class DoctorListAPIView(generics.ListAPIView):
     queryset = Doctor.objects.all().order_by('id')
@@ -48,3 +50,42 @@ class AvailableAppointmentSlotAPIView(generics.ListAPIView):
             queryset = queryset.filter(doctor_id=int(doctor_id))
 
         return queryset
+
+
+class RegisterAPIView(generics.CreateAPIView):
+    serializer_class = RegistrationSerializer
+    permission_classes = [AllowAny]
+
+
+class CurrentUserAPIView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        user = request.user
+
+        return Response({
+            'id': user.id,
+            'username': user.username,
+            'email': user.email,
+            'is_staff': user.is_staff
+        })
+
+
+class LogoutAPIView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request):
+        request.auth.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
+
+
+class AdminProfileAPIView(APIView):
+    permission_classes = [IsAdminUser]
+
+    def get(self, request):
+        return Response({
+            'id': request.user.id,
+            'username': request.user.username,
+            'email': request.user.email,
+            'is_staff': request.user.is_staff
+        })
