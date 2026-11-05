@@ -579,3 +579,132 @@ class PatientAppointmentEditAPITests(APITestCase):
         response = self.client.delete(self.url)
 
         self.assertEqual(response.status_code, 401)
+
+
+
+class AdminAppointmentAPITests(APITestCase):
+
+    def setUp(self):
+        self.admin_user = User.objects.create_user(
+            username='admin_staff',
+            password='TestPassword123!',
+            is_staff=True
+        )
+
+        self.patient1 = User.objects.create_user(
+            username='patient_one'
+        )
+        self.patient2 = User.objects.create_user(
+            username='patient_two'
+        )
+
+        doctor = Doctor.objects.create(
+            name='Dr. Smith',
+            specialty='General'
+        )
+
+        future_date = timezone.localdate() + timedelta(days=2)
+
+        slot1 = AppointmentSlot.objects.create(
+            doctor=doctor, date=future_date, time=time(10, 0)
+        )
+        slot2 = AppointmentSlot.objects.create(
+            doctor=doctor, date=future_date, time=time(11, 0)
+        )
+        self.free_slot = AppointmentSlot.objects.create(
+            doctor=doctor, date=future_date, time=time(12, 0)
+        )
+
+        self.appointment1 = Appointment.objects.create(
+            patient=self.patient1, slot=slot1
+        )
+        self.appointment2 = Appointment.objects.create(
+            patient=self.patient2, slot=slot2
+        )
+
+        self.list_url = reverse('api-admin-appointments')
+        self.detail_url = reverse(
+            'api-admin-appointment-detail',
+            args=[self.appointment2.id]
+        )
+
+    def test_admin_can_view_all_appointments(self):
+        self.client.force_authenticate(user=self.admin_user)
+
+        response = self.client.get(self.list_url)
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(len(response.data), 2)
+
+        usernames = [
+            item['patient_username'] for item in response.data
+        ]
+        self.assertIn('patient_one', usernames)
+        self.assertIn('patient_two', usernames)
+
+    def test_login_required(self):
+        response = self.client.get(self.list_url)
+        self.assertEqual(response.status_code, 401)
+
+    def test_patient_cannot_view_admin_appointments(self):
+        self.client.force_authenticate(user=self.patient1)
+
+        response = self.client.get(self.list_url)
+
+        self.assertEqual(response.status_code, 403)
+
+    def test_patient_cannot_edit_or_delete(self):
+        self.client.force_authenticate(user=self.patient1)
+
+        update_response = self.client.patch(
+            self.detail_url,
+            {'slot': self.free_slot.id},
+            format='json'
+        )
+        delete_response = self.client.delete(self.detail_url)
+
+        self.assertEqual(update_response.status_code, 403)
+        self.assertEqual(delete_response.status_code, 403)
+
+    def test_admin_can_update_patient_appointment(self):
+        self.client.force_authenticate(user=self.admin_user)
+
+        response = self.client.patch(
+            self.detail_url,
+            {'slot': self.free_slot.id},
+            format='json'
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.appointment2.refresh_from_db()
+        self.assertEqual(
+            self.appointment2.slot_id,
+            self.free_slot.id
+        )
+        self.assertEqual(
+            self.appointment2.patient,
+            self.patient2
+        )
+
+    def test_admin_cannot_double_book(self):
+        self.client.force_authenticate(user=self.admin_user)
+
+        response = self.client.patch(
+            self.detail_url,
+            {'slot': self.appointment1.slot_id},
+            format='json'
+        )
+
+        self.assertEqual(response.status_code, 400)
+
+    def test_admin_can_cancel_patient_appointment(self):
+        self.client.force_authenticate(user=self.admin_user)
+
+        response = self.client.delete(self.detail_url)
+
+        self.assertEqual(response.status_code, 204)
+        self.assertFalse(
+            Appointment.objects.filter(
+                id=self.appointment2.id
+            ).exists()
+        )

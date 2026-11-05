@@ -140,3 +140,40 @@ class PatientAppointmentDetailAPIView(
             raise ValidationError({
                 'slot': 'This appointment slot is already booked.'
             })
+
+
+class AdminAppointmentListAPIView(generics.ListAPIView):
+    serializer_class = AppointmentSerializer
+    permission_classes = [IsAdminUser]
+
+    def get_queryset(self):
+        return Appointment.objects.select_related(
+            'patient',
+            'slot__doctor'
+        ).order_by('-created_at')
+
+
+class AdminAppointmentDetailAPIView(
+    generics.RetrieveUpdateDestroyAPIView
+):
+    serializer_class = AppointmentSerializer
+    permission_classes = [IsAdminUser]
+
+    http_method_names = [
+        'get', 'patch', 'delete', 'head', 'options'
+    ]
+
+    def get_queryset(self):
+        return Appointment.objects.select_related(
+            'patient',
+            'slot__doctor'
+        )
+
+    def perform_update(self, serializer):
+        try:
+            with transaction.atomic():
+                serializer.save()
+        except IntegrityError:
+            raise ValidationError({
+                'slot': 'This appointment slot is already booked.'
+            })

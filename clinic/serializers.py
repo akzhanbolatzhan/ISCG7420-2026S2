@@ -55,6 +55,12 @@ class AppointmentSerializer(serializers.ModelSerializer):
         source='slot.doctor.name',
         read_only=True
     )
+
+    patient_username = serializers.CharField(
+        source='patient.username',
+        read_only=True
+    )
+
     date = serializers.DateField(
         source='slot.date',
         read_only=True
@@ -69,6 +75,7 @@ class AppointmentSerializer(serializers.ModelSerializer):
         fields = [
             'id',
             'patient',
+            'patient_username',
             'slot',
             'doctor_name',
             'date',
