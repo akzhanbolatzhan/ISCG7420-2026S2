@@ -84,18 +84,30 @@ class AppointmentSerializer(serializers.ModelSerializer):
     def validate_slot(self, slot):
         now = timezone.localtime()
 
+        # Check if the selected slot is in the past
         if (
-            slot.date < now.date()
-            or (
+                slot.date < now.date()
+                or (
                 slot.date == now.date()
                 and slot.time <= now.time()
-            )
+        )
         ):
             raise serializers.ValidationError(
                 "Cannot book an appointment in the past."
             )
 
-        if Appointment.objects.filter(slot=slot).exists():
+        # Check if the slot is already booked
+        booked_appointments = Appointment.objects.filter(
+            slot=slot
+        )
+
+        # Exclude the current appointment when updating
+        if self.instance is not None:
+            booked_appointments = booked_appointments.exclude(
+                pk=self.instance.pk
+            )
+
+        if booked_appointments.exists():
             raise serializers.ValidationError(
                 "This appointment slot is already booked."
             )

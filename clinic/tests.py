@@ -394,3 +394,188 @@ class PatientAppointmentAPITests(APITestCase):
         )
 
         self.assertEqual(response.status_code, 400)
+
+
+class PatientAppointmentEditAPITests(APITestCase):
+
+    def setUp(self):
+        self.patient = User.objects.create_user(
+            username='patient_edit',
+            password='TestPassword123!'
+        )
+
+        self.other_patient = User.objects.create_user(
+            username='other_patient_edit',
+            password='TestPassword123!'
+        )
+
+        self.doctor = Doctor.objects.create(
+            name='Dr. Smith',
+            specialty='General'
+        )
+
+        tomorrow = timezone.localdate() + timedelta(days=1)
+        yesterday = timezone.localdate() - timedelta(days=1)
+
+        self.original_slot = AppointmentSlot.objects.create(
+            doctor=self.doctor,
+            date=tomorrow,
+            time=time(10, 0)
+        )
+
+        self.new_slot = AppointmentSlot.objects.create(
+            doctor=self.doctor,
+            date=tomorrow,
+            time=time(11, 0)
+        )
+
+        self.booked_slot = AppointmentSlot.objects.create(
+            doctor=self.doctor,
+            date=tomorrow,
+            time=time(12, 0)
+        )
+
+        self.past_slot = AppointmentSlot.objects.create(
+            doctor=self.doctor,
+            date=yesterday,
+            time=time(9, 0)
+        )
+
+        self.appointment = Appointment.objects.create(
+            patient=self.patient,
+            slot=self.original_slot
+        )
+
+        self.other_appointment = Appointment.objects.create(
+            patient=self.other_patient,
+            slot=self.booked_slot
+        )
+
+        self.url = reverse(
+            'api-appointment-detail',
+            args=[self.appointment.id]
+        )
+
+    def test_update_appointment(self):
+        self.client.force_authenticate(user=self.patient)
+
+        response = self.client.patch(
+            self.url,
+            {'slot': self.new_slot.id},
+            format='json'
+        )
+
+        self.assertEqual(response.status_code, 200)
+
+        self.appointment.refresh_from_db()
+        self.assertEqual(
+            self.appointment.slot,
+            self.new_slot
+        )
+
+    def test_update_same_slot(self):
+        self.client.force_authenticate(user=self.patient)
+
+        response = self.client.patch(
+            self.url,
+            {'slot': self.original_slot.id},
+            format='json'
+        )
+
+        self.assertEqual(response.status_code, 200)
+
+    def test_cannot_update_to_booked_slot(self):
+        self.client.force_authenticate(user=self.patient)
+
+        response = self.client.patch(
+            self.url,
+            {'slot': self.booked_slot.id},
+            format='json'
+        )
+
+        self.assertEqual(response.status_code, 400)
+
+        self.appointment.refresh_from_db()
+        self.assertEqual(
+            self.appointment.slot,
+            self.original_slot
+        )
+
+    def test_cannot_update_to_past_slot(self):
+        self.client.force_authenticate(user=self.patient)
+
+        response = self.client.patch(
+            self.url,
+            {'slot': self.past_slot.id},
+            format='json'
+        )
+
+        self.assertEqual(response.status_code, 400)
+
+    def test_cancel_appointment(self):
+        self.client.force_authenticate(user=self.patient)
+
+        response = self.client.delete(self.url)
+
+        self.assertEqual(response.status_code, 204)
+
+        self.assertFalse(
+            Appointment.objects.filter(
+                id=self.appointment.id
+            ).exists()
+        )
+
+        # The cancelled slot becomes available again
+        self.assertFalse(
+            Appointment.objects.filter(
+                slot=self.original_slot
+            ).exists()
+        )
+
+    def test_cannot_update_other_patient_appointment(self):
+        self.client.force_authenticate(user=self.patient)
+
+        url = reverse(
+            'api-appointment-detail',
+            args=[self.other_appointment.id]
+        )
+
+        response = self.client.patch(
+            url,
+            {'slot': self.new_slot.id},
+            format='json'
+        )
+
+        self.assertEqual(response.status_code, 404)
+
+    def test_cannot_cancel_other_patient_appointment(self):
+        self.client.force_authenticate(user=self.patient)
+
+        url = reverse(
+            'api-appointment-detail',
+            args=[self.other_appointment.id]
+        )
+
+        response = self.client.delete(url)
+
+        self.assertEqual(response.status_code, 404)
+
+        self.assertTrue(
+            Appointment.objects.filter(
+                id=self.other_appointment.id
+            ).exists()
+        )
+
+    def test_update_requires_login(self):
+        response = self.client.patch(
+            self.url,
+            {'slot': self.new_slot.id},
+            format='json'
+        )
+
+        self.assertEqual(response.status_code, 401)
+
+    def test_cancel_requires_login(self):
+        response = self.client.delete(self.url)
+
+        self.assertEqual(response.status_code, 401)

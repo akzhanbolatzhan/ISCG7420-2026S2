@@ -9,7 +9,8 @@ from .api_views import (
     CurrentUserAPIView,
     LogoutAPIView,
     AdminProfileAPIView,
-    PatientAppointmentListCreateAPIView
+    PatientAppointmentListCreateAPIView,
+    PatientAppointmentDetailAPIView
 )
 
 urlpatterns = [
@@ -65,5 +66,13 @@ urlpatterns += [
         'appointments/',
         PatientAppointmentListCreateAPIView.as_view(),
         name='api-my-appointments'
+    ),
+]
+
+urlpatterns += [
+    path(
+        'appointments/<int:pk>/',
+        PatientAppointmentDetailAPIView.as_view(),
+        name='api-appointment-detail'
     ),
 ]
