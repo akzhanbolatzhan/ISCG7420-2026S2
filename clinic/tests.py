@@ -708,3 +708,76 @@ class AdminAppointmentAPITests(APITestCase):
                 id=self.appointment2.id
             ).exists()
         )
+
+
+
+
+class AdminDoctorCreateAPITests(APITestCase):
+
+    def setUp(self):
+        self.admin_user = User.objects.create_user(
+            username='doctor_admin',
+            password='TestPassword123!',
+            is_staff=True
+        )
+
+        self.patient = User.objects.create_user(
+            username='normal_patient',
+            password='TestPassword123!'
+        )
+
+        self.url = reverse('api-admin-doctor-create')
+
+        self.doctor_data = {
+            'name': 'Dr. John Smith',
+            'specialty': 'Cardiology',
+            'bio': 'Experienced cardiologist.'
+        }
+
+    def test_admin_can_add_doctor(self):
+        self.client.force_authenticate(user=self.admin_user)
+
+        response = self.client.post(
+            self.url,
+            self.doctor_data,
+            format='json'
+        )
+
+        self.assertEqual(response.status_code, 201)
+        self.assertEqual(Doctor.objects.count(), 1)
+        self.assertEqual(
+            Doctor.objects.first().name,
+            'Dr. John Smith'
+        )
+
+    def test_patient_cannot_add_doctor(self):
+        self.client.force_authenticate(user=self.patient)
+
+        response = self.client.post(
+            self.url,
+            self.doctor_data,
+            format='json'
+        )
+
+        self.assertEqual(response.status_code, 403)
+        self.assertEqual(Doctor.objects.count(), 0)
+
+    def test_add_doctor_requires_login(self):
+        response = self.client.post(
+            self.url,
+            self.doctor_data,
+            format='json'
+        )
+
+        self.assertEqual(response.status_code, 401)
+
+    def test_add_doctor_missing_required_fields(self):
+        self.client.force_authenticate(user=self.admin_user)
+
+        response = self.client.post(
+            self.url,
+            {'name': 'Dr. John Smith'},
+            format='json'
+        )
+
+        self.assertEqual(response.status_code, 400)

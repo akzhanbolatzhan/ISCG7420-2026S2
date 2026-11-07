@@ -177,3 +177,12 @@ class AdminAppointmentDetailAPIView(
             raise ValidationError({
                 'slot': 'This appointment slot is already booked.'
             })
+
+
+
+
+class AdminDoctorCreateAPIView(generics.CreateAPIView):
+    queryset = Doctor.objects.all()
+    serializer_class = DoctorSerializer
+    permission_classes = [IsAdminUser]
+
