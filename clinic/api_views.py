@@ -209,3 +209,10 @@ class AdminDoctorUpdateAPIView(
             })
 
         instance.delete()
+
+
+
+class AdminAppointmentSlotCreateAPIView(generics.CreateAPIView):
+    queryset = AppointmentSlot.objects.all()
+    serializer_class = AppointmentSlotSerializer
+    permission_classes = [IsAdminUser]
