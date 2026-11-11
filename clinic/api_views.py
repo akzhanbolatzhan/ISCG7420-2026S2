@@ -186,3 +186,26 @@ class AdminDoctorCreateAPIView(generics.CreateAPIView):
     serializer_class = DoctorSerializer
     permission_classes = [IsAdminUser]
 
+
+
+
+class AdminDoctorUpdateAPIView(
+    generics.RetrieveUpdateDestroyAPIView
+):
+    queryset = Doctor.objects.all()
+    serializer_class = DoctorSerializer
+    permission_classes = [IsAdminUser]
+
+    http_method_names = [
+        'get', 'patch', 'delete', 'head', 'options'
+    ]
+
+    def perform_destroy(self, instance):
+        if Appointment.objects.filter(
+            slot__doctor=instance
+        ).exists():
+            raise ValidationError({
+                'detail': 'Cannot delete a doctor with existing appointments.'
+            })
+
+        instance.delete()
