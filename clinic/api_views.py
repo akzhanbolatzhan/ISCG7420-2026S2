@@ -219,15 +219,16 @@ class AdminAppointmentSlotCreateAPIView(generics.CreateAPIView):
 
 
 
+
 class AdminAppointmentSlotUpdateAPIView(
-    generics.RetrieveUpdateAPIView
+    generics.RetrieveUpdateDestroyAPIView
 ):
     queryset = AppointmentSlot.objects.all()
     serializer_class = AppointmentSlotSerializer
     permission_classes = [IsAdminUser]
 
     http_method_names = [
-        'get', 'patch', 'head', 'options'
+        'get', 'patch', 'delete', 'head', 'options'
     ]
 
     def perform_update(self, serializer):
@@ -239,3 +240,13 @@ class AdminAppointmentSlotUpdateAPIView(
             })
 
         serializer.save()
+
+    def perform_destroy(self, instance):
+        if Appointment.objects.filter(
+            slot=instance
+        ).exists():
+            raise ValidationError({
+                'detail': 'Cannot delete a booked appointment slot.'
+            })
+
+        instance.delete()
