@@ -216,3 +216,26 @@ class AdminAppointmentSlotCreateAPIView(generics.CreateAPIView):
     queryset = AppointmentSlot.objects.all()
     serializer_class = AppointmentSlotSerializer
     permission_classes = [IsAdminUser]
+
+
+
+class AdminAppointmentSlotUpdateAPIView(
+    generics.RetrieveUpdateAPIView
+):
+    queryset = AppointmentSlot.objects.all()
+    serializer_class = AppointmentSlotSerializer
+    permission_classes = [IsAdminUser]
+
+    http_method_names = [
+        'get', 'patch', 'head', 'options'
+    ]
+
+    def perform_update(self, serializer):
+        if Appointment.objects.filter(
+            slot=serializer.instance
+        ).exists():
+            raise ValidationError({
+                'detail': 'Cannot update a booked appointment slot.'
+            })
+
+        serializer.save()
