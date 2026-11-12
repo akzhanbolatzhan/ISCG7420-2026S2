@@ -5,18 +5,21 @@ from rest_framework.exceptions import ValidationError
 from rest_framework import generics, status
 from rest_framework.permissions import AllowAny, IsAuthenticated, IsAdminUser
 from .models import Doctor, AppointmentSlot, Appointment
-from .serializers import DoctorSerializer, AppointmentSlotSerializer
+from .serializers import DoctorSerializer, AppointmentSlotSerializer, PatientSerializer
 from django.db import IntegrityError, transaction
 from .serializers import AppointmentSerializer
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from .serializers import RegistrationSerializer
+from django.contrib.auth import get_user_model
+
+
+User = get_user_model()
 
 class DoctorListAPIView(generics.ListAPIView):
     queryset = Doctor.objects.all().order_by('id')
     serializer_class = DoctorSerializer
     permission_classes = [AllowAny]
-
 
 class DoctorDetailAPIView(generics.RetrieveAPIView):
     queryset = Doctor.objects.all()
@@ -250,3 +253,13 @@ class AdminAppointmentSlotUpdateAPIView(
             })
 
         instance.delete()
+
+
+class AdminPatientListAPIView(generics.ListAPIView):
+    serializer_class = PatientSerializer
+    permission_classes = [IsAdminUser]
+
+    def get_queryset(self):
+        return User.objects.filter(
+            is_staff=False
+        ).order_by('id')

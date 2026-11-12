@@ -120,3 +120,17 @@ class AppointmentSerializer(serializers.ModelSerializer):
             )
 
         return slot
+
+
+
+class PatientSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = [
+            'id',
+            'username',
+            'email',
+            'is_active',
+            'date_joined'
+        ]
+        read_only_fields = fields
