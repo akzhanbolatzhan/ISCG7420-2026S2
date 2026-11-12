@@ -134,3 +134,33 @@ class PatientSerializer(serializers.ModelSerializer):
             'date_joined'
         ]
         read_only_fields = fields
+
+
+
+class PatientUpdateSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = [
+            'id',
+            'username',
+            'email',
+            'is_active',
+            'date_joined'
+        ]
+        read_only_fields = [
+            'id',
+            'is_active',
+            'date_joined'
+        ]
+
+    def validate_email(self, value):
+        if User.objects.filter(
+            email__iexact=value
+        ).exclude(
+            pk=self.instance.pk
+        ).exists():
+            raise serializers.ValidationError(
+                'This email is already registered.'
+            )
+
+        return value

@@ -17,7 +17,8 @@ from .api_views import (
     AdminDoctorUpdateAPIView,
     AdminAppointmentSlotCreateAPIView,
     AdminAppointmentSlotUpdateAPIView,
-AdminPatientListAPIView
+    AdminPatientListAPIView,
+    AdminPatientUpdateAPIView
 )
 
 urlpatterns = [
@@ -140,3 +141,13 @@ urlpatterns += [
         name='api-admin-patient-list'
     ),
 ]
+
+
+urlpatterns += [
+    path(
+        'admin/patients/<int:pk>/',
+        AdminPatientUpdateAPIView.as_view(),
+        name='api-admin-patient-update'
+    ),
+]
+
