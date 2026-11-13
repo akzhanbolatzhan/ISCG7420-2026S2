@@ -280,3 +280,28 @@ class AdminPatientUpdateAPIView(
         return User.objects.filter(
             is_staff=False
         )
+
+
+
+class AdminPatientDisableAPIView(generics.GenericAPIView):
+    queryset = User.objects.filter(
+        is_staff=False,
+        is_superuser=False
+    )
+    serializer_class = PatientSerializer
+    permission_classes = [IsAdminUser]
+
+    http_method_names = [
+        'post', 'options'
+    ]
+
+    def post(self, request, *args, **kwargs):
+        patient = self.get_object()
+
+        patient.is_active = False
+        patient.save(update_fields=['is_active'])
+
+        return Response(
+            self.get_serializer(patient).data,
+            status=status.HTTP_200_OK
+        )
