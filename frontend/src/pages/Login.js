@@ -2,7 +2,7 @@
 import { useState } from 'react';
 import axios from 'axios';
 
-function Login() {
+function Login({ onLogin }) {
     const [username, setUsername] = useState('');
     const [password, setPassword] = useState('');
     const [message, setMessage] = useState('');
@@ -18,11 +18,12 @@ function Login() {
             username: username,
             password: password
         })
-        .then((response) => {
-            localStorage.setItem('token', response.data.token);
-            setMessage('Login successful!');
-            setPassword('');
-        })
+         .then((response) => {
+         localStorage.setItem('token', response.data.token)
+          onLogin();
+          setMessage('Login successful!');
+          setPassword('');
+          })
         .catch((error) => {
             console.error(error);
             setError('Invalid username or password.');
