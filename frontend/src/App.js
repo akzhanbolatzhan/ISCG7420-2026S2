@@ -3,7 +3,7 @@ import { useState } from 'react';
 import axios from 'axios';
 import { BrowserRouter, Routes, Route, Link } from 'react-router-dom';
 import 'bootstrap/dist/css/bootstrap.min.css';
-
+import Booking from './pages/Booking';
 import Home from './pages/Home';
 import Doctors from './pages/Doctors';
 import Login from './pages/Login';
@@ -65,11 +65,16 @@ function App() {
                         <Link className="nav-link" to="/doctors">
                             Doctors
                         </Link>
-{!isLoggedIn && (
-    <Link className="nav-link" to="/register">
-        Register
-    </Link>
-)}
+                        {isLoggedIn && (
+            <Link className="nav-link" to="/booking">
+                Book Appointment
+            </Link>
+                )}
+            {!isLoggedIn && (
+                <Link className="nav-link" to="/register">
+                    Register
+                </Link>
+                )}
                         {isLoggedIn ? (
                             <button
                                 className="btn btn-outline-danger"
@@ -97,6 +102,7 @@ function App() {
                     <Route path="/" element={<Home />} />
                     <Route path="/doctors" element={<Doctors />} />
                     <Route path="/register" element={<Register />} />
+                    <Route path="/booking" element={<Booking />} />
                     <Route
                         path="/login"
                         element={
