@@ -10,6 +10,7 @@ function AdminAppointments() {
     const [selectedSlot, setSelectedSlot] = useState('');
     const [message, setMessage] = useState('');
     const [formError, setFormError] = useState('');
+    const [cancelError, setCancelError] = useState('');
 
     useEffect(() => {
         const token = localStorage.getItem('token');
@@ -53,6 +54,7 @@ function AdminAppointments() {
                 setFormError('Failed to load available appointment slots.');
             });
     }
+
     useEffect(() => {
         if (editingId !== null) {
             window.scrollTo({
@@ -61,6 +63,7 @@ function AdminAppointments() {
             });
         }
     }, [editingId]);
+
     function handleUpdateAppointment(event) {
         event.preventDefault();
 
@@ -105,6 +108,49 @@ function AdminAppointments() {
             });
     }
 
+    function handleCancelAppointment(appointment) {
+        const confirmCancel = window.confirm(
+            'Are you sure you want to cancel appointment #' + appointment.id + '?'
+        );
+
+        if (!confirmCancel) {
+            return;
+        }
+
+        const token = localStorage.getItem('token');
+
+        if (!token) {
+            setCancelError('Please log in as an administrator.');
+            return;
+        }
+
+        setMessage('');
+        setCancelError('');
+
+        axios.delete('/api/admin/appointments/' + appointment.id + '/', {
+            headers: {
+                Authorization: 'Token ' + token
+            }
+        })
+            .then(() => {
+                setAppointments((currentAppointments) =>
+                    currentAppointments.filter(
+                        (item) => item.id !== appointment.id
+                    )
+                );
+
+                if (editingId === appointment.id) {
+                    setEditingId(null);
+                }
+
+                setMessage('Appointment cancelled successfully!');
+            })
+            .catch((error) => {
+                console.error(error);
+                setCancelError('Failed to cancel appointment.');
+            });
+    }
+
     return (
         <div>
             <h2>Manage Appointments</h2>
@@ -116,7 +162,16 @@ function AdminAppointments() {
                     {error}
                 </div>
             )}
-
+            {cancelError && (
+                <div className="alert alert-danger">
+                    {cancelError}
+                </div>
+            )}
+            {message && (
+                <div className="alert alert-success">
+                    {message}
+                </div>
+            )}
             {!loading && !error && appointments.length === 0 && (
                 <p>No appointments found.</p>
             )}
@@ -143,14 +198,23 @@ function AdminAppointments() {
                             <td>{appointment.date}</td>
                             <td>{appointment.time}</td>
 
-                            <td>
+
+                            <td className="text-nowrap">
                                 <button
                                     className="btn btn-primary btn-sm"
                                     onClick={() => handleEditAppointment(appointment)}
                                 >
                                     Edit
                                 </button>
+
+                                <button
+                                    className="btn btn-danger btn-sm ms-2"
+                                    onClick={() => handleCancelAppointment(appointment)}
+                                >
+                                    Cancel
+                                </button>
                             </td>
+
 
                         </tr>
                     ))}
