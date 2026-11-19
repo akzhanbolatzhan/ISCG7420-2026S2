@@ -10,6 +10,7 @@ function AdminPatients() {
     const [editEmail, setEditEmail] = useState('');
     const [message, setMessage] = useState('');
     const [formError, setFormError] = useState('');
+    const [disableError, setDisableError] = useState('');
 
     useEffect(() => {
         const token = localStorage.getItem('token');
@@ -98,6 +99,55 @@ function AdminPatients() {
             });
     }
 
+    function handleDisablePatient(patient) {
+        const confirmDisable = window.confirm(
+            'Are you sure you want to disable ' + patient.username + '?'
+        );
+
+        if (!confirmDisable) {
+            return;
+        }
+
+        const token = localStorage.getItem('token');
+
+        if (!token) {
+            setDisableError('Please log in as an administrator.');
+            return;
+        }
+
+        setMessage('');
+        setDisableError('');
+
+        axios.post('/api/admin/patients/' + patient.id + '/disable/', {}, {
+            headers: {
+                Authorization: 'Token ' + token
+            }
+        })
+            .then((response) => {
+                setPatients((currentPatients) =>
+                    currentPatients.map((item) =>
+                        item.id === patient.id
+                            ? response.data
+                            : item
+                    )
+                );
+
+                if (editingId === patient.id) {
+                    setEditingId(null);
+                }
+
+                setMessage('Patient disabled successfully!');
+            })
+            .catch((error) => {
+                console.error(error);
+
+                setDisableError(
+                    error.response?.data?.detail ||
+                    'Failed to disable patient.'
+                );
+            });
+    }
+
     return (
         <div>
             <h2>Manage Patients</h2>
@@ -107,6 +157,11 @@ function AdminPatients() {
             {error && (
                 <div className="alert alert-danger">
                     {error}
+                </div>
+            )}
+            {disableError && (
+                <div className="alert alert-danger">
+                    {disableError}
                 </div>
             )}
             {message && (
@@ -142,14 +197,24 @@ function AdminPatients() {
                             </td>
                             <td>{patient.date_joined}</td>
 
-                            <td>
+
+                            <td className="text-nowrap">
                                 <button
                                     className="btn btn-primary btn-sm"
                                     onClick={() => handleEditPatient(patient)}
                                 >
                                     Edit
                                 </button>
+
+                                <button
+                                    className="btn btn-danger btn-sm ms-2"
+                                    onClick={() => handleDisablePatient(patient)}
+                                    disabled={!patient.is_active}
+                                >
+                                    Disable
+                                </button>
                             </td>
+
 
                         </tr>
                     ))}
