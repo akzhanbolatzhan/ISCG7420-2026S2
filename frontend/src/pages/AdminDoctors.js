@@ -47,6 +47,17 @@ function AdminDoctors() {
             });
     }, []);
 
+
+
+    useEffect(() => {
+        if (editingId !== null) {
+            window.scrollTo({
+                top: document.body.scrollHeight,
+                behavior: 'smooth'
+            });
+        }
+    }, [editingId]);
+
     function handleAddDoctor(event) {
         event.preventDefault();
 
@@ -131,6 +142,54 @@ function AdminDoctors() {
             .catch((error) => {
                 console.error(error);
                 setFormError('Failed to update doctor.');
+            });
+    }
+
+    function handleDeleteDoctor(doctor) {
+        const confirmDelete = window.confirm(
+            'Are you sure you want to delete ' + doctor.name + '?'
+        );
+
+        if (!confirmDelete) {
+            return;
+        }
+
+        const token = localStorage.getItem('token');
+
+        if (!token) {
+            setFormError('Please log in as an administrator.');
+            return;
+        }
+
+        setMessage('');
+        setFormError('');
+
+        axios.delete('/api/admin/doctors/' + doctor.id + '/', {
+            headers: {
+                Authorization: 'Token ' + token
+            }
+        })
+            .then((response) => {
+                setDoctors((currentDoctors) =>
+                    currentDoctors.filter(
+                        (item) => item.id !== doctor.id
+                    )
+                );
+
+                if (editingId === doctor.id) {
+                    setEditingId(null);
+                }
+
+                setMessage('Doctor deleted successfully!');
+            })
+            .catch((error) => {
+                console.error(error);
+
+                const errorMessage = error.response?.data?.detail;
+
+                setFormError(
+                    errorMessage || 'Failed to delete doctor.'
+                );
             });
     }
 
@@ -235,14 +294,23 @@ function AdminDoctors() {
                             <td>{doctor.name}</td>
                             <td>{doctor.specialty}</td>
                             <td>{doctor.bio}</td>
-                            <td>
+
+                            <td className="text-nowrap">
                                 <button
                                     className="btn btn-primary btn-sm"
                                     onClick={() => handleEditDoctor(doctor)}
                                 >
                                     Edit
                                 </button>
+
+                                <button
+                                    className="btn btn-danger btn-sm ms-2"
+                                    onClick={() => handleDeleteDoctor(doctor)}
+                                >
+                                    Delete
+                                </button>
                             </td>
+
                         </tr>
                     ))}
                     </tbody>
