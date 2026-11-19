@@ -9,7 +9,7 @@ import Login from './pages/Login';
 import Register from './pages/Register';
 import MyAppointments from './pages/MyAppointments';
 import AdminDashboard from './pages/AdminDashboard';
-
+import AdminDoctors from './pages/AdminDoctors';
 
 
 function App() {
@@ -154,6 +154,7 @@ useEffect(() => {
                     <Route path="/booking" element={<Booking />} />
                     <Route path="/my-appointments" element={<MyAppointments />} />
                     <Route path="/admin-dashboard" element={<AdminDashboard />} />
+                    <Route path="/admin-doctors" element={<AdminDoctors />} />
                     <Route
                         path="/login"
                         element={

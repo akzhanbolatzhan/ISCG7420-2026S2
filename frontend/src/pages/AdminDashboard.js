@@ -1,6 +1,7 @@
 
 import { useEffect, useState } from 'react';
 import axios from 'axios';
+import { Link } from 'react-router-dom';
 
 function AdminDashboard() {
     const [admin, setAdmin] = useState(null);
@@ -53,7 +54,9 @@ function AdminDashboard() {
 
                     <ul className="list-group">
                         <li className="list-group-item">
-                            Manage Doctors
+                            <Link to="/admin-doctors">
+                                Manage Doctors
+                                </Link>
                         </li>
                         <li className="list-group-item">
                             Manage Appointment Slots
