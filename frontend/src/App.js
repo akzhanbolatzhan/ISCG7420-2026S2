@@ -8,6 +8,7 @@ import Home from './pages/Home';
 import Doctors from './pages/Doctors';
 import Login from './pages/Login';
 import Register from './pages/Register';
+import MyAppointments from './pages/MyAppointments';
 function App() {
     const [isLoggedIn, setIsLoggedIn] = useState(
         !!localStorage.getItem('token')
@@ -66,10 +67,16 @@ function App() {
                             Doctors
                         </Link>
                         {isLoggedIn && (
-            <Link className="nav-link" to="/booking">
-                Book Appointment
-            </Link>
-                )}
+                        <Link className="nav-link" to="/booking">
+                            Book Appointment
+                        </Link>
+                            )}
+                     {isLoggedIn && (
+                         <Link className="nav-link" to="/my-appointments">
+                             My Appointments
+                         </Link>
+                     )}
+
             {!isLoggedIn && (
                 <Link className="nav-link" to="/register">
                     Register
@@ -103,6 +110,7 @@ function App() {
                     <Route path="/doctors" element={<Doctors />} />
                     <Route path="/register" element={<Register />} />
                     <Route path="/booking" element={<Booking />} />
+                    <Route path="/my-appointments" element={<MyAppointments />} />
                     <Route
                         path="/login"
                         element={
