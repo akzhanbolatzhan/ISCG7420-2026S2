@@ -6,10 +6,10 @@ function MyAppointments() {
     const [appointments, setAppointments] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
-const [slots, setSlots] = useState([]);
-const [editingId, setEditingId] = useState(null);
-const [selectedSlot, setSelectedSlot] = useState('');
-    useEffect(() => {
+    const [slots, setSlots] = useState([]);
+    const [editingId, setEditingId] = useState(null);
+    const [selectedSlot, setSelectedSlot] = useState('');
+    const [message, setMessage] = useState('');    useEffect(() => {
         const token = localStorage.getItem('token');
 
         if (!token) {
@@ -35,6 +35,7 @@ const [selectedSlot, setSelectedSlot] = useState('');
         });
     }, []);
 
+
 function handleEdit(appointment) {
     setEditingId(appointment.id);
     setSelectedSlot('');
@@ -49,6 +50,44 @@ function handleEdit(appointment) {
             console.error(error);
             setError('Failed to load available slots.');
         });
+    setMessage('');
+}
+
+function handleUpdate() {
+    const token = localStorage.getItem('token');
+
+    if (!selectedSlot) {
+        setError('Please select a new appointment time.');
+        return;
+    }
+
+    setError('');
+    setMessage('');
+
+    axios.patch('/api/appointments/' + editingId + '/', {
+        slot: Number(selectedSlot)
+    }, {
+        headers: {
+            Authorization: 'Token ' + token
+        }
+    })
+    .then((response) => {
+        setAppointments((currentAppointments) =>
+            currentAppointments.map((appointment) =>
+                appointment.id === editingId
+                    ? response.data
+                    : appointment
+            )
+        );
+
+        setMessage('Appointment updated successfully!');
+        setEditingId(null);
+        setSelectedSlot('');
+    })
+    .catch((error) => {
+        console.error(error);
+        setError('Failed to update appointment.');
+    });
 }
 
     return (
@@ -62,7 +101,11 @@ function handleEdit(appointment) {
                     {error}
                 </div>
             )}
-
+            {message && (
+                <div className="alert alert-success">
+                    {message}
+                </div>
+            )}
             {!loading && !error && appointments.length === 0 && (
                 <p>You have no appointments.</p>
             )}
@@ -99,42 +142,50 @@ function handleEdit(appointment) {
                 </table>
             )}
 
-{editingId !== null && (
-    <div className="mt-4">
-        <h4>Update Appointment #{editingId}</h4>
 
-        <label className="form-label">
-            Select New Appointment Time
-        </label>
 
-        <select
-            className="form-select mb-3"
-            value={selectedSlot}
-            onChange={(e) => setSelectedSlot(e.target.value)}
-        >
-            <option value="">Select a time</option>
+            {editingId !== null && (
+                <div className="mt-4">
+                    <h4>Update Appointment #{editingId}</h4>
 
-            {slots.map((slot) => (
-                <option key={slot.id} value={slot.id}>
-                    {slot.doctor_name} - {slot.date} - {slot.time}
-                </option>
-            ))}
-        </select>
+                    <label className="form-label">
+                        Select New Appointment Time
+                    </label>
 
-        {slots.length === 0 && (
-            <p>No available appointment slots.</p>
-        )}
+                    <select
+                        className="form-select mb-3"
+                        value={selectedSlot}
+                        onChange={(e) => setSelectedSlot(e.target.value)}
+                    >
+                        <option value="">Select a time</option>
 
-        <button
-            className="btn btn-secondary"
-            onClick={() => setEditingId(null)}
-        >
-            Close
-        </button>
-    </div>
-)}
-        </div>
-    );
+                        {slots.map((slot) => (
+                            <option key={slot.id} value={slot.id}>
+                                            {slot.doctor_name} - {slot.date} - {slot.time}
+                            </option>
+                        ))}
+                    </select>
+
+                    {slots.length === 0 && (
+                        <p>No available appointment slots.</p>
+                    )}
+                    <button
+                        className="btn btn-success me-2"
+                        onClick={handleUpdate}
+                        disabled={!selectedSlot}
+                    >
+                        Save
+                    </button>
+                    <button
+                        className="btn btn-secondary"
+                        onClick={() => setEditingId(null)}
+                    >
+                        Close
+                    </button>
+                </div>
+            )}
+                    </div>
+                );
 }
 
 export default MyAppointments;
