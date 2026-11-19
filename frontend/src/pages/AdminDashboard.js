@@ -1,7 +1,6 @@
-
-import { useEffect, useState } from 'react';
+import {useEffect, useState} from 'react';
 import axios from 'axios';
-import { Link } from 'react-router-dom';
+import {Link} from 'react-router-dom';
 
 function AdminDashboard() {
     const [admin, setAdmin] = useState(null);
@@ -22,16 +21,16 @@ function AdminDashboard() {
                 Authorization: 'Token ' + token
             }
         })
-        .then((response) => {
-            setAdmin(response.data);
-        })
-        .catch((error) => {
-            console.error(error);
-            setError('Access denied. Administrator account required.');
-        })
-        .finally(() => {
-            setLoading(false);
-        });
+            .then((response) => {
+                setAdmin(response.data);
+            })
+            .catch((error) => {
+                console.error(error);
+                setError('Access denied. Administrator account required.');
+            })
+            .finally(() => {
+                setLoading(false);
+            });
     }, []);
 
     return (
@@ -56,10 +55,12 @@ function AdminDashboard() {
                         <li className="list-group-item">
                             <Link to="/admin-doctors">
                                 Manage Doctors
-                                </Link>
+                            </Link>
                         </li>
                         <li className="list-group-item">
-                            Manage Appointment Slots
+                            <Link to="/admin-slots">
+                                Manage Appointment Slots
+                            </Link>
                         </li>
                         <li className="list-group-item">
                             Manage Appointments

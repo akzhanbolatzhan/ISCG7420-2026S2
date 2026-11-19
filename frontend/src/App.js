@@ -1,6 +1,6 @@
-import { useEffect, useState } from 'react';
+import {useEffect, useState} from 'react';
 import axios from 'axios';
-import { BrowserRouter, Routes, Route, Link } from 'react-router-dom';
+import {BrowserRouter, Routes, Route, Link} from 'react-router-dom';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import Booking from './pages/Booking';
 import Home from './pages/Home';
@@ -10,7 +10,7 @@ import Register from './pages/Register';
 import MyAppointments from './pages/MyAppointments';
 import AdminDashboard from './pages/AdminDashboard';
 import AdminDoctors from './pages/AdminDoctors';
-
+import AdminSlots from './pages/AdminSlots';
 
 function App() {
     const [isLoggedIn, setIsLoggedIn] = useState(
@@ -20,44 +20,41 @@ function App() {
     const [logoutError, setLogoutError] = useState('');
     const [isAdmin, setIsAdmin] = useState(null);
 
-useEffect(() => {
-    if (!isLoggedIn) {
-        setIsAdmin(null);
-        return;
-    }
-
-    const token = localStorage.getItem('token');
-
-    if (!token) {
-        setIsLoggedIn(false);
-        return;
-    }
-
-    axios.get('/api/auth/me/', {
-        headers: {
-            Authorization: 'Token ' + token
+    useEffect(() => {
+        if (!isLoggedIn) {
+            setIsAdmin(null);
+            return;
         }
-    })
-    .then((response) => {
-        setIsAdmin(response.data.is_staff);
-    })
-    .catch((error) => {
-        console.error(error);
-        setIsAdmin(null);
 
-        if (error.response?.status === 401) {
-            localStorage.removeItem('token');
+        const token = localStorage.getItem('token');
+
+        if (!token) {
             setIsLoggedIn(false);
+            return;
         }
-    });
-}, [isLoggedIn]);
 
+        axios.get('/api/auth/me/', {
+            headers: {
+                Authorization: 'Token ' + token
+            }
+        })
+            .then((response) => {
+                setIsAdmin(response.data.is_staff);
+            })
+            .catch((error) => {
+                console.error(error);
+                setIsAdmin(null);
+
+                if (error.response?.status === 401) {
+                    localStorage.removeItem('token');
+                    setIsLoggedIn(false);
+                }
+            });
+    }, [isLoggedIn]);
 
 
     function handleLogout() {
         const token = localStorage.getItem('token');
-
-
 
 
         if (!token) {
@@ -70,22 +67,22 @@ useEffect(() => {
                 Authorization: 'Token ' + token
             }
         })
-        .then(() => {
-            localStorage.removeItem('token');
-            setIsLoggedIn(false);
-            setLogoutError('');
-        })
-        .catch((error) => {
-            console.error(error);
-
-            if (error.response?.status === 401) {
+            .then(() => {
                 localStorage.removeItem('token');
                 setIsLoggedIn(false);
                 setLogoutError('');
-            } else {
-                setLogoutError('Logout failed. Please try again.');
-            }
-        });
+            })
+            .catch((error) => {
+                console.error(error);
+
+                if (error.response?.status === 401) {
+                    localStorage.removeItem('token');
+                    setIsLoggedIn(false);
+                    setLogoutError('');
+                } else {
+                    setLogoutError('Logout failed. Please try again.');
+                }
+            });
     }
 
     return (
@@ -105,25 +102,25 @@ useEffect(() => {
                             Doctors
                         </Link>
                         {isLoggedIn && isAdmin === false && (
-                        <Link className="nav-link" to="/booking">
-                            Book Appointment
-                        </Link>
-                            )}
-                           {isLoggedIn && isAdmin === false && (
-                         <Link className="nav-link" to="/my-appointments">
-                             My Appointments
-                         </Link>
-                           )}
-                           {isLoggedIn && isAdmin === true && (
-                         <Link className="nav-link" to="/admin-dashboard">
-                             Admin Dashboard
-                         </Link>
-                           )}
-                           {!isLoggedIn && (
-                            <Link className="nav-link" to="/register">
-                             Register
+                            <Link className="nav-link" to="/booking">
+                                Book Appointment
                             </Link>
-                            )}
+                        )}
+                        {isLoggedIn && isAdmin === false && (
+                            <Link className="nav-link" to="/my-appointments">
+                                My Appointments
+                            </Link>
+                        )}
+                        {isLoggedIn && isAdmin === true && (
+                            <Link className="nav-link" to="/admin-dashboard">
+                                Admin Dashboard
+                            </Link>
+                        )}
+                        {!isLoggedIn && (
+                            <Link className="nav-link" to="/register">
+                                Register
+                            </Link>
+                        )}
                         {isLoggedIn ? (
                             <button
                                 className="btn btn-outline-danger"
@@ -148,13 +145,14 @@ useEffect(() => {
                 )}
 
                 <Routes>
-                    <Route path="/" element={<Home />} />
-                    <Route path="/doctors" element={<Doctors />} />
-                    <Route path="/register" element={<Register />} />
-                    <Route path="/booking" element={<Booking />} />
-                    <Route path="/my-appointments" element={<MyAppointments />} />
-                    <Route path="/admin-dashboard" element={<AdminDashboard />} />
-                    <Route path="/admin-doctors" element={<AdminDoctors />} />
+                    <Route path="/" element={<Home/>}/>
+                    <Route path="/doctors" element={<Doctors/>}/>
+                    <Route path="/register" element={<Register/>}/>
+                    <Route path="/booking" element={<Booking/>}/>
+                    <Route path="/my-appointments" element={<MyAppointments/>}/>
+                    <Route path="/admin-dashboard" element={<AdminDashboard/>}/>
+                    <Route path="/admin-doctors" element={<AdminDoctors/>}/>
+                    <Route path="/admin-slots" element={<AdminSlots/>}/>
                     <Route
                         path="/login"
                         element={
