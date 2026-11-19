@@ -146,6 +146,53 @@ function AdminSlots() {
             });
     }
 
+    function handleDeleteSlot(slot) {
+        const confirmDelete = window.confirm(
+            'Are you sure you want to delete appointment slot #' + slot.id + '?'
+        );
+
+        if (!confirmDelete) {
+            return;
+        }
+
+        const token = localStorage.getItem('token');
+
+        if (!token) {
+            setFormError('Please log in as an administrator.');
+            return;
+        }
+
+        setMessage('');
+        setFormError('');
+
+        axios.delete('/api/admin/appointment-slots/' + slot.id + '/', {
+            headers: {
+                Authorization: 'Token ' + token
+            }
+        })
+            .then(() => {
+                setSlots((currentSlots) =>
+                    currentSlots.filter(
+                        (item) => item.id !== slot.id
+                    )
+                );
+
+                if (editingId === slot.id) {
+                    setEditingId(null);
+                }
+
+                setMessage('Appointment slot deleted successfully!');
+            })
+            .catch((error) => {
+                console.error(error);
+
+                setFormError(
+                    error.response?.data?.detail ||
+                    'Failed to delete appointment slot.'
+                );
+            });
+    }
+
     return (
         <div>
             <h2>Manage Appointment Slots</h2>
@@ -258,14 +305,23 @@ function AdminSlots() {
                             <td>{slot.date}</td>
                             <td>{slot.time}</td>
 
-                            <td>
+
+                            <td className="text-nowrap">
                                 <button
                                     className="btn btn-primary btn-sm"
                                     onClick={() => handleEditSlot(slot)}
                                 >
                                     Edit
                                 </button>
+
+                                <button
+                                    className="btn btn-danger btn-sm ms-2"
+                                    onClick={() => handleDeleteSlot(slot)}
+                                >
+                                    Delete
+                                </button>
                             </td>
+
 
                         </tr>
                     ))}
