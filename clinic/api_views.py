@@ -215,8 +215,9 @@ class AdminDoctorUpdateAPIView(
 
 
 
-class AdminAppointmentSlotCreateAPIView(generics.CreateAPIView):
-    queryset = AppointmentSlot.objects.all()
+
+class AdminAppointmentSlotCreateAPIView(generics.ListCreateAPIView):
+    queryset = AppointmentSlot.objects.all().order_by('date', 'time', 'id')
     serializer_class = AppointmentSlotSerializer
     permission_classes = [IsAdminUser]
 
