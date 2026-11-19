@@ -62,8 +62,10 @@ function AdminDashboard() {
                                 Manage Appointment Slots
                             </Link>
                         </li>
-                        <li className="list-group-item">
-                            Manage Appointments
+                                              <li className="list-group-item">
+                            <Link to="/admin-appointments">
+                                Manage Appointments
+                            </Link>
                         </li>
                         <li className="list-group-item">
                             Manage Patients
