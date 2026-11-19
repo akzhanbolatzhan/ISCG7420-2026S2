@@ -53,6 +53,46 @@ function handleEdit(appointment) {
     setMessage('');
 }
 
+function handleCancel(appointmentId) {
+    const confirmCancel = window.confirm(
+        'Are you sure you want to cancel this appointment?'
+    );
+
+    if (!confirmCancel) {
+        return;
+    }
+
+    const token = localStorage.getItem('token');
+
+    if (!token) {
+        setError('Please log in first.');
+        return;
+    }
+
+    setError('');
+    setMessage('');
+
+    axios.delete('/api/appointments/' + appointmentId + '/', {
+        headers: {
+            Authorization: 'Token ' + token
+        }
+    })
+    .then((response) => {
+        setAppointments((currentAppointments) =>
+            currentAppointments.filter(
+                (appointment) => appointment.id !== appointmentId
+            )
+        );
+
+        setEditingId(null);
+        setMessage('Appointment cancelled successfully!');
+    })
+    .catch((error) => {
+        console.error(error);
+        setError('Failed to cancel appointment.');
+    });
+}
+
 function handleUpdate() {
     const token = localStorage.getItem('token');
 
@@ -136,6 +176,12 @@ function handleUpdate() {
                                         Edit
                                     </button>
                                 </td>
+                                <button
+                                   className="btn btn-danger btn-sm ms-2"
+                                   onClick={() => handleCancel(appointment.id)}
+                               >
+                                   Cancel Appointment
+                               </button>
                             </tr>
                         ))}
                     </tbody>
