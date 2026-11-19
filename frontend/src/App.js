@@ -9,6 +9,10 @@ import Doctors from './pages/Doctors';
 import Login from './pages/Login';
 import Register from './pages/Register';
 import MyAppointments from './pages/MyAppointments';
+import AdminDashboard from './pages/AdminDashboard';
+
+
+
 function App() {
     const [isLoggedIn, setIsLoggedIn] = useState(
         !!localStorage.getItem('token')
@@ -111,6 +115,7 @@ function App() {
                     <Route path="/register" element={<Register />} />
                     <Route path="/booking" element={<Booking />} />
                     <Route path="/my-appointments" element={<MyAppointments />} />
+                    <Route path="/admin-dashboard" element={<AdminDashboard />} />
                     <Route
                         path="/login"
                         element={
