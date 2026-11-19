@@ -32,7 +32,7 @@ function Login({ onLogin }) {
 
     return (
         <div className="col-md-5 mx-auto">
-            <h2>Patient Login</h2>
+       <h2>Login</h2>
 
             {message && (
                 <div className="alert alert-success">
