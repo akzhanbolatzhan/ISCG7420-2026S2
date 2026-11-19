@@ -11,6 +11,10 @@ function AdminSlots() {
     const [time, setTime] = useState('');
     const [message, setMessage] = useState('');
     const [formError, setFormError] = useState('');
+    const [editingId, setEditingId] = useState(null);
+    const [editDoctorId, setEditDoctorId] = useState('');
+    const [editDate, setEditDate] = useState('');
+    const [editTime, setEditTime] = useState('');
 
     useEffect(() => {
         const token = localStorage.getItem('token');
@@ -44,6 +48,14 @@ function AdminSlots() {
                 setLoading(false);
             });
     }, []);
+    useEffect(() => {
+        if (editingId !== null) {
+            window.scrollTo({
+                top: document.body.scrollHeight,
+                behavior: 'smooth'
+            });
+        }
+    }, [editingId]);
 
     function handleAddSlot(event) {
         event.preventDefault();
@@ -77,6 +89,60 @@ function AdminSlots() {
             .catch((error) => {
                 console.error(error);
                 setFormError('Failed to add appointment slot.');
+            });
+    }
+
+    function handleEditSlot(slot) {
+        setEditingId(slot.id);
+        setEditDoctorId(String(slot.doctor));
+        setEditDate(slot.date);
+        setEditTime(slot.time.slice(0, 5));
+
+        setMessage('');
+        setFormError('');
+    }
+
+    function handleUpdateSlot(event) {
+        event.preventDefault();
+
+        const token = localStorage.getItem('token');
+
+        if (!token) {
+            setFormError('Please log in as an administrator.');
+            return;
+        }
+
+        setMessage('');
+        setFormError('');
+
+        axios.patch('/api/admin/appointment-slots/' + editingId + '/', {
+            doctor: Number(editDoctorId),
+            date: editDate,
+            time: editTime
+        }, {
+            headers: {
+                Authorization: 'Token ' + token
+            }
+        })
+            .then((response) => {
+                setSlots((currentSlots) =>
+                    currentSlots.map((slot) =>
+                        slot.id === editingId
+                            ? response.data
+                            : slot
+                    )
+                );
+
+                setMessage('Appointment slot updated successfully!');
+                setEditingId(null);
+            })
+            .catch((error) => {
+                console.error(error);
+
+                setFormError(
+                    error.response?.data?.detail ||
+                    'Failed to update appointment slot.'
+                );
             });
     }
 
@@ -180,6 +246,7 @@ function AdminSlots() {
                         <th>Doctor</th>
                         <th>Date</th>
                         <th>Time</th>
+                        <th>Action</th>
                     </tr>
                     </thead>
 
@@ -190,11 +257,94 @@ function AdminSlots() {
                             <td>{slot.doctor_name}</td>
                             <td>{slot.date}</td>
                             <td>{slot.time}</td>
+
+                            <td>
+                                <button
+                                    className="btn btn-primary btn-sm"
+                                    onClick={() => handleEditSlot(slot)}
+                                >
+                                    Edit
+                                </button>
+                            </td>
+
                         </tr>
                     ))}
                     </tbody>
                 </table>
             )}
+
+            {editingId !== null && (
+                <div className="mt-4 mb-4">
+                    <h4>Edit Appointment Slot #{editingId}</h4>
+
+                    <form onSubmit={handleUpdateSlot}>
+                        <div className="mb-3">
+                            <label className="form-label">
+                                Doctor
+                            </label>
+
+                            <select
+                                className="form-select"
+                                value={editDoctorId}
+                                onChange={(e) => setEditDoctorId(e.target.value)}
+                                required
+                            >
+                                <option value="">Select Doctor</option>
+
+                                {doctors.map((doctor) => (
+                                    <option key={doctor.id} value={doctor.id}>
+                                        {doctor.name}
+                                    </option>
+                                ))}
+                            </select>
+                        </div>
+
+                        <div className="mb-3">
+                            <label className="form-label">
+                                Date
+                            </label>
+
+                            <input
+                                type="date"
+                                className="form-control"
+                                value={editDate}
+                                onChange={(e) => setEditDate(e.target.value)}
+                                required
+                            />
+                        </div>
+
+                        <div className="mb-3">
+                            <label className="form-label">
+                                Time
+                            </label>
+
+                            <input
+                                type="time"
+                                className="form-control"
+                                value={editTime}
+                                onChange={(e) => setEditTime(e.target.value)}
+                                required
+                            />
+                        </div>
+
+                        <button
+                            type="submit"
+                            className="btn btn-success me-2"
+                        >
+                            Save Changes
+                        </button>
+
+                        <button
+                            type="button"
+                            className="btn btn-secondary"
+                            onClick={() => setEditingId(null)}
+                        >
+                            Close
+                        </button>
+                    </form>
+                </div>
+            )}
+
         </div>
     );
 }
