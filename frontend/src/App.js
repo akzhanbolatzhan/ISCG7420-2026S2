@@ -12,6 +12,7 @@ import AdminDashboard from './pages/AdminDashboard';
 import AdminDoctors from './pages/AdminDoctors';
 import AdminSlots from './pages/AdminSlots';
 import AdminAppointments from './pages/AdminAppointments';
+import AdminPatients from './pages/AdminPatients';
 
 function App() {
     const [isLoggedIn, setIsLoggedIn] = useState(
@@ -155,6 +156,7 @@ function App() {
                     <Route path="/admin-doctors" element={<AdminDoctors/>}/>
                     <Route path="/admin-slots" element={<AdminSlots/>}/>
                     <Route path="/admin-appointments" element={<AdminAppointments/>}/>
+                    <Route path="/admin-patients" element={<AdminPatients/>}/>
                     <Route
                         path="/login"
                         element={
